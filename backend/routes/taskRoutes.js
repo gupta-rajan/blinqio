@@ -7,8 +7,16 @@ import {
   updateTask,
   deleteTask,
 } from '../controllers/taskController.js';
+import { protect } from '../middleware/authMiddleware.js'; // Ensure to import authentication middleware
 
-router.route('/').post(createTask).get(getTasks); // Create and get all tasks
-router.route('/:id').get(getTaskById).put(updateTask).delete(deleteTask); // Get, update, delete specific task
+// Routes for tasks
+router.route('/')
+  .get(protect, getTasks)   // Get all tasks (protected)
+  .post(protect, createTask); // Create a new task (protected)
+
+router.route('/:id')
+  .get(protect, getTaskById) // Get a specific task (protected)
+  .put(protect, updateTask)   // Update a specific task (protected)
+  .delete(protect, deleteTask); // Delete a specific task (protected)
 
 export default router;

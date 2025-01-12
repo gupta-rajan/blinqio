@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser';
 import connectDB from './config/db.js';
 import taskRoutes from './routes/taskRoutes.js'; // Import task routes
 import userRoutes from './routes/userRoutes.js'; // Import user routes
+import path from 'path';
 // import tasks from './data/tasks.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 dotenv.config();
@@ -29,6 +30,19 @@ app.use('/api/users', userRoutes); // Handles all user-related routes (login, re
 
 // Task Routes
 app.use('/api/tasks', taskRoutes); // Handles all task-related routes
+
+const __dirname = path.resolve();
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '/frontend/build')));
+
+  app.get('*', (req, res) =>
+    res.sendFile(path.resolve(__dirname, 'frontend', 'build', 'index.html'))
+  );
+} else {
+  app.get('/', (req, res) => {
+    res.send('API is running....');
+  });
+}
 
 // Error handling middlewares
 app.use(notFound);  // Handles 404 errors (if a route doesn't match)

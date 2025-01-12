@@ -1,31 +1,43 @@
 import asyncHandler from '../middleware/asyncHandler.js';
 import Task from '../models/taskModel.js'; // Adjust path to task model
 
+// Get All Tasks
+//@desc Get all tasks for the logged-in user
+//@route GET /api/tasks
+//@access Private
+const getTasks = asyncHandler(async (req, res) => {
+  try {
+    // Fetch tasks specific to the logged-in user
+    const tasks = await Task.find({ user: req.user._id });  // Ensure user-specific tasks
+    res.json(tasks);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // Create Task
-//@desc Create a new task
+//@desc Create a new task for the logged-in user
 //@route POST /api/tasks
 //@access Private
 const createTask = asyncHandler(async (req, res) => {
   const { title, description } = req.body;
 
+  // Ensure required fields are provided
+  if (!title || !description) {
+    res.status(400);
+    throw new Error('Title and description are required');
+  }
+
+  // Create a task and associate it with the logged-in user
   const task = new Task({
     title,
     description,
-    user: req.user._id, // assuming user is authenticated
+    user: req.user._id,  // Reference the logged-in user
   });
 
-  const createdTask = await task.save();
-  res.status(201).json(createdTask);
-});
-
-// Get All Tasks
-//@desc Get all tasks
-//@route GET /api/tasks
-//@access Private
-const getTasks = asyncHandler(async (req, res) => {
   try {
-    const tasks = await Task.find({ user: req.user._id }); // Only fetch tasks related to the logged-in user
-    res.json(tasks);
+    const createdTask = await task.save();
+    res.status(201).json(createdTask);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

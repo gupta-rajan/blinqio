@@ -1,23 +1,26 @@
 const tasks = [
   {
-    user: "60d5fbb6b8a5b60e8b8f59e5", // User ID should be replaced with valid user object IDs from your DB
+    user: "678409cd612a69d229950364", // Replace with actual User ID from the database
     title: "Complete React project",
-    description:
-      "Complete the full-stack React application for the task management system.",
+    description: "Complete the full-stack React application for the task management system.",
     completed: false,
   },
   {
-    user: "60d5fbb6b8a5b60e8b8f59e5", // User ID should be replaced with valid user object IDs from your DB
+    user: "678409cd612a69d229950364", // Replace with actual User ID from the database
     title: "Review pull request",
-    description:
-      "Review the code submitted for the task management system and provide feedback.",
+    description: "Review the code submitted for the task management system and provide feedback.",
     completed: true,
   },
   {
-    user: "60d5fbb6b8a5b60e8b8f59e6", // User ID should be replaced with valid user object IDs from your DB
+    user: "678409cd612a69d229950365", // Replace with actual User ID from the database
     title: "Write unit tests",
-    description:
-      "Write unit tests for the user authentication feature in the application.",
+    description: "Write unit tests for the user authentication feature in the application.",
+    completed: false,
+  },
+  {
+    user: "678409cd612a69d229950365", // Replace with actual User ID from the database
+    title: "Prepare project documentation",
+    description: "Create detailed documentation for the task management application.",
     completed: false,
   },
 ];

@@ -5,7 +5,6 @@ import { useCreateTaskMutation } from '../slices/tasksApiSlice';
 const TaskForm = () => {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDescription, setNewTaskDescription] = useState('');
-
   const [createTask] = useCreateTaskMutation();
 
   const handleCreateTask = async (e) => {
@@ -15,8 +14,8 @@ const TaskForm = () => {
         title: newTaskTitle,
         description: newTaskDescription,
       };
-      await createTask(taskData).unwrap(); // Use unwrap to handle success/error properly
-      setNewTaskTitle('');  // Clear input fields after successful task creation
+      await createTask(taskData).unwrap();
+      setNewTaskTitle('');
       setNewTaskDescription('');
     } catch (err) {
       console.error('Failed to create task:', err);

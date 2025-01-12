@@ -13,6 +13,12 @@ const authUser = asyncHandler(async (req, res) => {
   if (user && (await user.matchPassword(password))) {
     generateToken(res, user._id);
 
+    res.cookie('jwt', generateToken(res, user._id), {
+      httpOnly: true,  // Ensures the cookie is not accessible via JavaScript
+      secure: process.env.NODE_ENV === 'production',  // Only set cookies over HTTPS in production
+      maxAge: 30 * 24 * 60 * 60 * 1000,  // Cookie expires after 30 days
+    });
+
     res.json({
       _id: user._id,
       name: user.name,

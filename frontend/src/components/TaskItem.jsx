@@ -6,7 +6,7 @@ const TaskItem = ({ task }) => {
 
   const handleDeleteTask = async () => {
     try {
-      await deleteTask(task._id).unwrap(); // Delete task by its ID
+      await deleteTask(task._id).unwrap();
     } catch (err) {
       console.error('Failed to delete task:', err);
     }
