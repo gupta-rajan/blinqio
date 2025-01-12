@@ -1,89 +1,72 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Container, Row, Col, Form, Button, Alert } from "react-bootstrap";
+import { useState , useEffect} from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import {Form,Button,Row,Col} from 'react-bootstrap';
+import { useDispatch,useSelector } from "react-redux";
+import FormContainer from "../components/FormContainer";
+import Loader from "../components/Loader";
+import {useLoginMutation} from "../slices/usersApiSlice";
+import {setCredentials} from "../slices/authSlice";
+import {toast} from "react-toastify";
 
 const LoginScreen = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
-  const { search } = useLocation();
-  const redirect = new URLSearchParams(search).get("redirect") || "/tasklist"; // Default to '/tasklist' if no redirect is found
+    const [email,setEmail] = useState('')
+    const [password,setPassword] = useState('')
 
-  useEffect(() => {
-    // If the user is already logged in, redirect them to the task list
-    const token = localStorage.getItem("authToken");
-    if (token) {
-      navigate(redirect);
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+
+    const [login, {isLoading}] = useLoginMutation();
+    const {userInfo} = useSelector((state)=>state.auth);
+
+    const {search} = useLocation();
+    const sp = new URLSearchParams(search);
+    const redirect = sp.get('redirect') || '/';
+
+    useEffect(()=>{
+        if(userInfo){
+            navigate(redirect);
+        }
+    },[userInfo,navigate,redirect]);
+
+    const submitHandler = async (e) =>{
+        e.preventDefault()
+        try {
+            const res = await login({email,password}).unwrap();
+            dispatch(setCredentials({...res,}));
+            navigate(redirect);
+        } catch (err) {
+            toast.error(err?.data?.message || err.error)
+        }
     }
-  }, [navigate, redirect]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+    return (
+        <FormContainer>
+            <h1>Sign In</h1>
 
-    setIsLoading(true);
-    setError(""); // Reset error on each submit
+            <Form onSubmit={submitHandler}>
+                <Form.Group controlId="email" className="my-3">
+                    <Form.Label>Email Address</Form.Label>
+                    <Form.Control type="email" placeholder="Enter email" value={email} onChange={(e)=>setEmail(e.target.value)}/>
+                </Form.Group>
 
-    try {
-      const response = await axios.post("/api/users/auth", {
-        email,
-        password,
-      });
+                <Form.Group controlId="password" className="my-3">
+                    <Form.Label>Password</Form.Label>
+                    <Form.Control type="password" placeholder="Enter password" value={password} onChange={(e)=>setPassword(e.target.value)}/>
+                </Form.Group>
+                <Button type="submit" variant="primary" className="mt-2" disabled={isLoading}>
+                    Sign In
+                </Button>
 
-      // Store the token in localStorage (or cookie for better security in real apps)
-      localStorage.setItem("authToken", response.data.token); 
-
-      // Redirect to task list or to the page they were trying to access
-      navigate(redirect);
-    } catch (err) {
-      setError("Invalid credentials. Please try again.");
-    } finally {
-      setIsLoading(false); // Stop loading once the API call is done
-    }
-  };
-
-  return (
-    <Container className="login-container">
-      <Row className="justify-content-md-center">
-        <Col md={6}>
-          <div className="login-box">
-            <h2>Sign In</h2>
-            <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="formEmail">
-                <Form.Label>Email</Form.Label>
-                <Form.Control
-                  type="email"
-                  placeholder="Enter email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </Form.Group>
-
-              <Form.Group controlId="formPassword">
-                <Form.Label>Password</Form.Label>
-                <Form.Control
-                  type="password"
-                  placeholder="Enter password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </Form.Group>
-
-              {error && <Alert variant="danger">{error}</Alert>}
-
-              <Button variant="primary" type="submit" block disabled={isLoading}>
-                {isLoading ? "Logging In..." : "Log In"}
-              </Button>
+                {isLoading && <Loader />}
             </Form>
-          </div>
-        </Col>
-      </Row>
-    </Container>
-  );
-};
 
-export default LoginScreen;
+            <Row className="py-3">
+                <Col>
+                    New Customer? <Link to={redirect? `/register?redirect=${redirect}`: '/register'}>Register</Link>
+                </Col>
+            </Row>
+        </FormContainer>
+    )
+}
+
+export default LoginScreen

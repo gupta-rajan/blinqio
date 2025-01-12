@@ -1,81 +1,89 @@
-import React, { useState } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import { Container, Row, Col, Form, Button, Alert } from "react-bootstrap";
+import { useState , useEffect} from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import {Form,Button,Row,Col} from 'react-bootstrap';
+import { useDispatch,useSelector } from "react-redux";
+import FormContainer from "../components/FormContainer";
+import Loader from "../components/Loader";
+import {useRegisterMutation} from "../slices/usersApiSlice";
+import {setCredentials} from "../slices/authSlice";
+import {toast} from "react-toastify";
 
 const RegisterScreen = () => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const navigate = useNavigate();
+    const [email,setEmail] = useState('')
+    const [name,setName] = useState('')
+    const [password,setPassword] = useState('')
+    const [confirmPassword,setConfirmPassword] = useState('')
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
 
-    try {
-      await axios.post("/api/users", {
-        name,
-        email,
-        password,
-      });
-      navigate("/login"); // Redirect to login screen
-    } catch (err) {
-      setError("Error registering user. Please try again.");
+    const [register, {isLoading}] = useRegisterMutation();
+    const {userInfo} = useSelector((state)=>state.auth);
+
+    const {search} = useLocation();
+    const sp = new URLSearchParams(search);
+    const redirect = sp.get('redirect') || '/';
+
+    useEffect(()=>{
+        if(userInfo){
+            navigate(redirect);
+        }
+    },[userInfo,navigate,redirect]);
+
+    const submitHandler = async (e) =>{
+        e.preventDefault()
+        if(password!==confirmPassword){
+            toast.error('Passwords do not match');
+            return;
+        }else{
+            try {
+                const res = await register({name,email,password}).unwrap();
+                dispatch(setCredentials({...res}));
+                navigate(redirect);
+            } catch (err) {
+                toast.error(err?.data?.message || err.error)
+            }
+        }
     }
-  };
 
-  return (
-    <Container className="register-container">
-      <Row className="justify-content-md-center">
-        <Col md={6}>
-          <div className="register-box">
-            <h2>Register</h2>
-            <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="formName">
-                <Form.Label>Name</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Enter your name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
-              </Form.Group>
+    return (
+        <FormContainer>
+            <h1>Sign Up</h1>
 
-              <Form.Group controlId="formEmail">
-                <Form.Label>Email</Form.Label>
-                <Form.Control
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </Form.Group>
+            <Form onSubmit={submitHandler}>
+                <Form.Group controlId="name" className="my-3">
+                    <Form.Label>Name</Form.Label>
+                    <Form.Control type="text" placeholder="Enter name" value={name} onChange={(e)=>setName(e.target.value)}/>
+                </Form.Group>
+                <Form.Group controlId="email" className="my-3">
+                    <Form.Label>Email Address</Form.Label>
+                    <Form.Control type="email" placeholder="Enter email" value={email} onChange={(e)=>setEmail(e.target.value)}/>
+                </Form.Group>
+ 
+                <Form.Group controlId="password" className="my-3">
+                    <Form.Label>Password</Form.Label>
+                    <Form.Control type="password" placeholder="Enter password" value={password} onChange={(e)=>setPassword(e.target.value)}/>
+                </Form.Group>
 
-              <Form.Group controlId="formPassword">
-                <Form.Label>Password</Form.Label>
-                <Form.Control
-                  type="password"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </Form.Group>
+                <Form.Group controlId="confirmPassword" className="my-3">
+                    <Form.Label>Confirm Password</Form.Label>
+                    <Form.Control type="password" placeholder="Confirm password" value={confirmPassword} onChange={(e)=>setConfirmPassword(e.target.value)}/>
+                </Form.Group>
 
-              {error && <Alert variant="danger">{error}</Alert>}
+                <Button type="submit" variant="primary" className="mt-2" disabled={isLoading}>
+                    Register
+                </Button>
 
-              <Button variant="primary" type="submit" block>
-                Register
-              </Button>
+                {isLoading && <Loader />}
             </Form>
-          </div>
-        </Col>
-      </Row>
-    </Container>
-  );
-};
 
-export default RegisterScreen;
+            <Row className="py-3">
+                <Col>
+                    Already have an account? <Link to={redirect? `/login?redirect=${redirect}`: '/login'}>Login</Link>
+                </Col>
+            </Row>
+        </FormContainer>
+    )
+}
+
+export default RegisterScreen
