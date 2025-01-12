@@ -1,9 +1,9 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import colors from 'colors';
-import users from './data/users.js'; // Sample user data
+import users from './data/users.js';
 import tasks from './data/tasks.js'; // Sample task data
-import User from './models/userModel.js'; // User model
+import User from './models/userModel.js';
 import Task from './models/taskModel.js'; // Task model
 import connectDB from './config/db.js'; // Database connection
 

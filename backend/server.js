@@ -1,8 +1,10 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
 import connectDB from './config/db.js';
 import taskRoutes from './routes/taskRoutes.js'; // Import task routes
 import userRoutes from './routes/userRoutes.js'; // Import user routes
+// import tasks from './data/tasks.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 dotenv.config();
 
@@ -14,6 +16,8 @@ const app = express();
 
 // Middleware to parse incoming JSON requests
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // Default route
 app.get('/', (req, res) => {

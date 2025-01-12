@@ -23,7 +23,7 @@ const createTask = asyncHandler(async (req, res) => {
 //@route GET /api/tasks
 //@access Private
 const getTasks = asyncHandler(async (req, res) => {
-  const tasks = await Task.find({ user: req.user._id });
+  const tasks = await Task.find({});
   res.json(tasks);
 });
 
