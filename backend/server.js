@@ -20,11 +20,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Default route
-app.get('/', (req, res) => {
-  res.send('API is running...');
-});
-
 // User Routes
 app.use('/api/users', userRoutes); // Handles all user-related routes (login, register, profile, etc.)
 
@@ -39,11 +34,9 @@ if (process.env.NODE_ENV === 'production') {
     res.sendFile(path.resolve(__dirname, 'frontend', 'build', 'index.html'))
   );
 } else {
-  app.use(express.static(path.join(__dirname, '/frontend/build')));
-
-  app.get('*', (req, res) =>
-    res.sendFile(path.resolve(__dirname, 'frontend', 'build', 'index.html'))
-  );
+  app.get('/', (req, res) => {
+    res.send('API is running....');
+  });
 }
 
 // Error handling middlewares
