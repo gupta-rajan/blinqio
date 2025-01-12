@@ -23,9 +23,12 @@ const createTask = asyncHandler(async (req, res) => {
 //@route GET /api/tasks
 //@access Private
 const getTasks = asyncHandler(async (req, res) => {
-  console.log('API hit with params:', req.query);
-  const tasks = await Task.find({});
-  res.json(tasks);
+  try {
+    const tasks = await Task.find({ user: req.user._id }); // Only fetch tasks related to the logged-in user
+    res.json(tasks);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 });
 
 // Get Task by ID
@@ -33,14 +36,24 @@ const getTasks = asyncHandler(async (req, res) => {
 //@route GET /api/tasks/:id
 //@access Private
 const getTaskById = asyncHandler(async (req, res) => {
-  const task = await Task.findById(req.params.id);
+  try {
+    const task = await Task.findById(req.params.id);
 
-  if (!task) {
-    res.status(404);
-    throw new Error('Task not found');
+    if (!task) {
+      res.status(404);
+      throw new Error('Task not found');
+    }
+
+    // Ensure the task belongs to the logged-in user
+    if (task.user.toString() !== req.user._id.toString()) {
+      res.status(401);
+      throw new Error('Not authorized to view this task');
+    }
+
+    res.json(task);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
-
-  res.json(task);
 });
 
 // Update Task
@@ -48,19 +61,29 @@ const getTaskById = asyncHandler(async (req, res) => {
 //@route PUT /api/tasks/:id
 //@access Private
 const updateTask = asyncHandler(async (req, res) => {
-  const task = await Task.findById(req.params.id);
+  try {
+    const task = await Task.findById(req.params.id);
 
-  if (!task) {
-    res.status(404);
-    throw new Error('Task not found');
+    if (!task) {
+      res.status(404);
+      throw new Error('Task not found');
+    }
+
+    // Ensure the task belongs to the logged-in user
+    if (task.user.toString() !== req.user._id.toString()) {
+      res.status(401);
+      throw new Error('Not authorized to update this task');
+    }
+
+    task.title = req.body.title || task.title;
+    task.description = req.body.description || task.description;
+
+    const updatedTask = await task.save();
+
+    res.json(updatedTask);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
-
-  task.title = req.body.title || task.title;
-  task.description = req.body.description || task.description;
-
-  const updatedTask = await task.save();
-
-  res.json(updatedTask);
 });
 
 // Delete Task
@@ -68,16 +91,26 @@ const updateTask = asyncHandler(async (req, res) => {
 //@route DELETE /api/tasks/:id
 //@access Private
 const deleteTask = asyncHandler(async (req, res) => {
-  const task = await Task.findById(req.params.id);
+  try {
+    const task = await Task.findById(req.params.id);
 
-  if (!task) {
-    res.status(404);
-    throw new Error('Task not found');
+    if (!task) {
+      res.status(404);
+      throw new Error('Task not found');
+    }
+
+    // Ensure the task belongs to the logged-in user
+    if (task.user.toString() !== req.user._id.toString()) {
+      res.status(401);
+      throw new Error('Not authorized to delete this task');
+    }
+
+    await task.remove();
+
+    res.json({ message: 'Task removed' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
-
-  await task.remove();
-
-  res.json({ message: 'Task removed' });
 });
 
 export { createTask, getTasks, getTaskById, updateTask, deleteTask };

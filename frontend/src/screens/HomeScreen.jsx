@@ -1,32 +1,25 @@
-import { Row, Col } from "react-bootstrap";
-import { useGetTasksQuery } from "../slices/tasksApiSlice";
-import Loader from "../components/Loader";
+import { Button } from "react-bootstrap";
+import { useSelector } from "react-redux";
+// import Loader from "../components/Loader";
 import Message from "../components/Message";
+import { Link } from "react-router-dom";
 
 const HomeScreen = () => {
-  const {
-    data: tasks,
-    isLoading,
-    error,
-  } = useGetTasksQuery();
+  const { userInfo } = useSelector((state) => state.auth); // Check if user is logged in
 
   return (
     <>
-      {isLoading ? (
-        <Loader />
-      ) : error ? (
-        <Message variant='danger'>{error?.data?.message || error.error}</Message>
+      <h1>Welcome to BlinqIO</h1>
+
+      {/* Show the 'Go to ToDo List' button only if user is logged in */}
+      {userInfo ? (
+        <Link to="/tasklist">
+          <Button variant="primary" className="mt-3">
+            Go to ToDo List
+          </Button>
+        </Link>
       ) : (
-        <>
-          <h1>Welcome to BlinqIO</h1>
-          <Row>
-            {tasks.map((task) => (
-              <Col sm={12} md={6} lg={4} xl={3}>
-                <h3>{task.title}</h3>
-              </Col>
-            ))}
-          </Row>
-        </>
+        <Message variant="danger">You need to log in to view your tasks.</Message>
       )}
     </>
   );

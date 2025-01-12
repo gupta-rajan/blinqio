@@ -17,6 +17,7 @@ import HomeScreen from "./screens/HomeScreen";
 import LoginScreen from "./screens/LoginScreen";
 import RegisterScreen from "./screens/RegisterScreen";
 import TaskListScreen from "./screens/TaskListScreen";
+import PrivateRoute from './components/PrivateRoute';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -24,7 +25,9 @@ const router = createBrowserRouter(
       <Route index={true} path="/" element={<HomeScreen />} />
       <Route path="/login" element={<LoginScreen />} />
       <Route path="/register" element={<RegisterScreen />} />
-      <Route path="/tasklist" element={<TaskListScreen />} />
+      <Route path='' element={<PrivateRoute />}>
+        <Route path='/tasklist' element={<TaskListScreen />} />
+      </Route>
     </Route>
   )
 );

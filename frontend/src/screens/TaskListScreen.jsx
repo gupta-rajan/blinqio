@@ -1,41 +1,41 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { useEffect } from 'react';
+import { ListGroup } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
+import { useGetTasksQuery } from '../slices/tasksApiSlice';
+import TaskForm from '../components/TaskForm';
+import TaskItem from '../components/TaskItem';
+import Loader from '../components/Loader';
+import Message from '../components/Message';
 
 const TaskListScreen = () => {
-  const [tasks, setTasks] = useState([]);
-  const [error, setError] = useState("");
+  const navigate = useNavigate();
+  const { data: tasks, isLoading, error } = useGetTasksQuery();
 
   useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const token = localStorage.getItem("authToken");
-        if (!token) {
-          // Redirect to login page if token is not available
-          window.location.href = "/login";
-          return;
-        }
-
-        const response = await axios.get("/api/tasks", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setTasks(response.data);
-      } catch (err) {
-        setError("Failed to load tasks.");
-      }
-    };
-
-    fetchTasks();
-  }, []);
+    if (!localStorage.getItem('userInfo')) {
+      navigate('/login');
+    }
+  }, [navigate]);
 
   return (
     <div>
-      <h2>Task List</h2>
-      {error && <p>{error}</p>}
-      <ul>
-        {tasks.map((task) => (
-          <li key={task._id}>{task.name}</li>
-        ))}
-      </ul>
+      <h1>Task List</h1>
+
+      {isLoading && <Loader />}
+      {error && <Message variant="danger">{error?.data?.message || error.error}</Message>}
+
+      <TaskForm />
+
+      <h2 className="my-4">Your Tasks</h2>
+      {tasks && tasks.length > 0 ? (
+        <ListGroup>
+          {tasks?.map((task) => (
+            <TaskItem key={task._id} task={task} />
+          ))}
+        </ListGroup>
+      ) : (
+        <Message>No tasks available</Message>
+      )}
     </div>
   );
 };
