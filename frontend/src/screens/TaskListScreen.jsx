@@ -1,46 +1,41 @@
-import React from 'react';
-import { Button, ListGroup } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 const TaskListScreen = () => {
-  const navigate = useNavigate();
-  
-  const tasks = [
-    { id: 1, name: "Task 1" },
-    { id: 2, name: "Task 2" },
-    { id: 3, name: "Task 3" }
-  ];
+  const [tasks, setTasks] = useState([]);
+  const [error, setError] = useState("");
 
-  const handleAddTask = () => {
-    // Add logic to add a new task
-    console.log("Add new task");
-  };
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+          // Redirect to login page if token is not available
+          window.location.href = "/login";
+          return;
+        }
 
-  const handleDeleteTask = (taskId) => {
-    // Add logic to delete a task
-    console.log(`Delete task ${taskId}`);
-  };
+        const response = await axios.get("/api/tasks", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setTasks(response.data);
+      } catch (err) {
+        setError("Failed to load tasks.");
+      }
+    };
+
+    fetchTasks();
+  }, []);
 
   return (
     <div>
-      <h2>Your Task List</h2>
-      <ListGroup>
+      <h2>Task List</h2>
+      {error && <p>{error}</p>}
+      <ul>
         {tasks.map((task) => (
-          <ListGroup.Item key={task.id}>
-            {task.name}
-            <Button
-              variant="danger"
-              onClick={() => handleDeleteTask(task.id)}
-              className="float-end"
-            >
-              Delete
-            </Button>
-          </ListGroup.Item>
+          <li key={task._id}>{task.name}</li>
         ))}
-      </ListGroup>
-      <Button onClick={handleAddTask} className="mt-3">
-        Add Task
-      </Button>
+      </ul>
     </div>
   );
 };
