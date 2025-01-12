@@ -23,6 +23,7 @@ const createTask = asyncHandler(async (req, res) => {
 //@route GET /api/tasks
 //@access Private
 const getTasks = asyncHandler(async (req, res) => {
+  console.log('API hit with params:', req.query);
   const tasks = await Task.find({});
   res.json(tasks);
 });
